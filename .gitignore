@@ -1,0 +1,10 @@
+#sources
+src/test.cpp
+
+# compiled stuff
+*src/*.o
+
+# folders
+src/section\ 3\ codes
+
+/Debug/
