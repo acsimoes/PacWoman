@@ -60,6 +60,9 @@ PlayingState::PlayingState(Game* game)
 {
 	m_pacWoman.move(100, 100);
 	m_ghost.move(200, 200);
+	std::cout << "loading maze!\n";
+	m_maze.loadLevel("level");
+	std::cout << "Loaded maze\n";
 }
 
 PlayingState::~PlayingState()
@@ -139,7 +142,7 @@ void NoCoinState::draw(sf::RenderWindow& window)
 	window.draw(m_sprite);
 	
 	if (m_displayText)
-	window.draw(m_text);
+		window.draw(m_text);
 }
 
 void GetReadyState::insertCoin()
@@ -168,6 +171,7 @@ void GetReadyState::draw(sf::RenderWindow& window)
 
 void PlayingState::insertCoin()
 {
+	// std::cout << "m_pacWoman.die() triggered\n";
 	m_pacWoman.die();
 }
 void PlayingState::pressButton()
@@ -180,6 +184,7 @@ void PlayingState::moveStick(sf::Vector2i direction)
 }
 void PlayingState::update(sf::Time delta)
 {
+	// std::cout << "PlayinState update!\n";
 	m_pacWoman.update(delta);
 	m_ghost.update(delta);
 }
@@ -187,6 +192,7 @@ void PlayingState::draw(sf::RenderWindow& window)
 {
 	window.draw(m_pacWoman);
 	window.draw(m_ghost);
+	window.draw(m_maze);
 }
 
 void WonState::insertCoin()

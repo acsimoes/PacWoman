@@ -12,6 +12,7 @@ private:
     bool m_isPlaying;
     sf::Time m_duration;
     bool m_loop;
+    sf::Time m_timeBuffer;
 
     public:
     Animator();

@@ -11,9 +11,9 @@ CFLAGS = $(OPT) -Wall -g -std=c++11
 LIBS = -lsfml-graphics -lsfml-window -lsfml-system
 
 #Source files
-SRCS = src/main.cpp src/game.cpp src/GameState.cpp src/Dot.cpp \
+SRCS = src/game.cpp src/GameState.cpp src/Dot.cpp \
 	   src/Character.cpp src/Ghost.cpp src/PacWoman.cpp \
-	   src/Bonus.cpp src/Animator.cpp
+	   src/Bonus.cpp src/Animator.cpp src/Maze.cpp
 
 #Object files
 OBJS = $(SRCS:.cpp=.o)
@@ -29,17 +29,20 @@ PROG = pac-woman
 
 all: $(PROG)
 
-$(PROG): $(OBJS)
-	$(CC) $(CFLAGS) $(SPATH) $(OBJS) -o $(PROG) $(LIBS)
+$(PROG): $(OBJS) src/main.o
+	$(CC) $(CFLAGS) $(SPATH) $(OBJS) src/main.o -o $(PROG) $(LIBS)
 
 .cpp.o:
 	$(CC) $(CFLAGS) $(SPATH) -c $*.cpp -o $*.o
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c -o $*.o
+
+test: $(OBJS) src/test.o
+	$(CC) $(CFLAGS) $(SPATH) $(OBJS) src/test.o -o test $(LIBS)
 	
 clean:
-	rm src/*.o $(PROG)
+	rm src/*.o $(PROG) test
 remove:
 	rm 
 depend:

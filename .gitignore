@@ -4,7 +4,11 @@ src/test.cpp
 # compiled stuff
 *src/*.o
 
+#executables
+main
+pac-woman
+
 # folders
-src/section\ 3\ codes
+src/section\ 4\ codes
 
 /Debug/

@@ -1,4 +1,7 @@
 #include "PacWoman.hpp"
+//DEBUG ONLY
+#include <iostream>
+//END of DEBUG
 
 PacWoman::PacWoman(sf::Texture& texture)
 : m_visual(texture)
@@ -26,6 +29,7 @@ void PacWoman::die()
 	
 	if (!m_isDying)
 	{
+        // std::cout << "Starting die animation\n";
 		m_dieAnimator.play(sf::seconds(1), false);
 		m_isDying = true;
 	} 
@@ -58,7 +62,9 @@ void PacWoman::update(sf::Time delta)
     }
     else
     {
+        // std::cout << "Die Animation Update!\n";
         m_dieAnimator.update(delta);
+        // std::cout << "Die Animation animate!\n";
         m_dieAnimator.animate(m_visual);
 
         if (!m_dieAnimator.isPlaying())

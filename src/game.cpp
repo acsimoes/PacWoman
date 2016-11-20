@@ -34,6 +34,7 @@ void Game::run()
 	while (m_window.isOpen())
     {
         sf::Event event;
+        int count = 0;
         while (m_window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
@@ -56,6 +57,7 @@ void Game::run()
 						 if (event.key.code == sf::Keyboard::Down)
 						 m_currentState->moveStick(sf::Vector2i(0, 1));
 					 }
+					 // std::cout << "count = " << count++ << std::endl;
 					 
         }
         m_currentState->update(frameClock.restart());

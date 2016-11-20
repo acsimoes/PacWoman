@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include "PacWoman.hpp"
 #include "Ghost.hpp"
+#include "Maze.hpp"
 
 class Game;
 
@@ -90,6 +91,7 @@ public:
 	private:
 	PacWoman m_pacWoman;
 	Ghost m_ghost;
+	Maze m_maze;
 };
 
 class LostState : public GameState

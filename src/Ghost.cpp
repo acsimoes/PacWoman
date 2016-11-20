@@ -1,4 +1,8 @@
 #include "Ghost.hpp"
+//DEBUG ONLY
+#include <iostream>
+//END of DEBUG
+
 
 Ghost::Ghost(sf::Texture& texture)
 :m_visual(texture)
@@ -21,6 +25,7 @@ Ghost::Ghost(sf::Texture& texture)
 
 void Ghost::setWeak(sf::Time duration)
 {
+    // std::cout << "setWeak called\n";
 	m_isWeak =true;
 	m_weaknessDuration = duration;
 }
@@ -59,7 +64,9 @@ void Ghost::update(sf::Time delta)
     }
     else
     {
+        // std::cout << "Weak animation update!\n";
         m_weakAnimator.update(delta);
+        // std::cout << "Weak animation animate!\n";
         m_weakAnimator.animate(m_visual);
     }
 }

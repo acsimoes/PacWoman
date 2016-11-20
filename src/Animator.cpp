@@ -5,6 +5,7 @@ Animator::Animator()
 , m_isPlaying(false)
 , m_duration(sf::Time::Zero)
 , m_loop(false)
+, m_timeBuffer(sf::Time::Zero)
 {
 }
 
@@ -18,6 +19,7 @@ void Animator::play(sf::Time duration, bool loop)
     m_isPlaying = true;
     m_duration = duration;
     m_loop = loop;
+    m_timeBuffer = sf::Time::Zero;
 }
 
 bool Animator::isPlaying() const
@@ -30,12 +32,11 @@ void Animator::update(sf::Time delta)
     if (!isPlaying())
         return;
 
-    static sf::Time timeBuffer = sf::Time::Zero;
-    timeBuffer += delta;
+    m_timeBuffer += delta;
 
     sf::Time frameDuration = m_duration / static_cast<float>(m_frames.size());
 
-    while (timeBuffer > frameDuration)
+    while (m_timeBuffer > frameDuration)
     {
         m_currentFrame++;
 
@@ -47,7 +48,7 @@ void Animator::update(sf::Time delta)
             m_currentFrame = 0;
         }
 
-        timeBuffer -= frameDuration;
+        m_timeBuffer -= frameDuration;
     }
 }
 
