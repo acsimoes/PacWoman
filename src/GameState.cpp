@@ -55,18 +55,40 @@ GetReadyState::~GetReadyState()
 
 PlayingState::PlayingState(Game* game)
 :GameState(game)
-, m_pacWoman(game->getTexture())
-, m_ghost(game->getTexture())
+, m_pacWoman(nullptr)
+// , m_pacWoman(game->getTexture())
+// , m_ghost(game->getTexture())
 {
-	m_pacWoman.move(100, 100);
-	m_ghost.move(200, 200);
+	// m_pacWoman.move(100, 100);
+	// m_ghost.move(200, 200);
 	std::cout << "loading maze!\n";
 	m_maze.loadLevel("level");
 	std::cout << "Loaded maze\n";
+
+	m_pacWoman = new PacWoman(game->getTexture());
+	m_pacWoman->setMaze(&m_maze);
+	auto pacWomanPosition = m_maze.getPacWomanPosition();
+	m_pacWoman->setPosition(m_maze.mapCellToPixel(pacWomanPosition));
+	
+	for(auto ghostPosition: m_maze.getGhostPositions())
+	{
+		Ghost* ghost = new Ghost(game->getTexture());
+		ghost->setMaze(&m_maze);
+		ghost->setPosition(m_maze.mapCellToPixel(ghostPosition));
+
+		m_ghosts.push_back(ghost);
+	}
 }
 
 PlayingState::~PlayingState()
 {
+	delete m_pacWoman;
+
+	for(uint i = 0; i < m_ghosts.size(); i++)
+	{
+		delete m_ghosts[i];
+	}
+
 }
 
 
@@ -172,27 +194,30 @@ void GetReadyState::draw(sf::RenderWindow& window)
 void PlayingState::insertCoin()
 {
 	// std::cout << "m_pacWoman.die() triggered\n";
-	m_pacWoman.die();
+	// m_pacWoman.die();
 }
 void PlayingState::pressButton()
 {
-	m_ghost.setWeak(sf::seconds(3));
+	// m_ghost.setWeak(sf::seconds(3));
 }
 void PlayingState::moveStick(sf::Vector2i direction)
 {
-	
+	std::cout << "Moving Stick. Direction = (" << direction.x << ", " << direction.y << ")\n";
+	m_pacWoman->setDirection(direction);
 }
 void PlayingState::update(sf::Time delta)
 {
 	// std::cout << "PlayinState update!\n";
-	m_pacWoman.update(delta);
-	m_ghost.update(delta);
+	m_pacWoman->update(delta);
+	for(Ghost* ghost : m_ghosts)
+		ghost->update(delta);	
 }
 void PlayingState::draw(sf::RenderWindow& window)
 {
-	window.draw(m_pacWoman);
-	window.draw(m_ghost);
 	window.draw(m_maze);
+	window.draw(*m_pacWoman);
+	for(Ghost* ghost : m_ghosts)
+		window.draw(*ghost);	
 }
 
 void WonState::insertCoin()

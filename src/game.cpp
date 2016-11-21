@@ -34,7 +34,7 @@ void Game::run()
 	while (m_window.isOpen())
     {
         sf::Event event;
-        int count = 0;
+        int cbggount = 0;
         while (m_window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
