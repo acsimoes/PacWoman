@@ -1,18 +1,26 @@
 #include "Dot.hpp"
 #include "Maze.hpp"
 #include <iostream>
-Maze::Maze(/*sf::Texture& texture*/)
+Maze::Maze(sf::Texture& texture)
 : m_mazeSize(0, 0)
-// , m_texture(texture)
+, m_texture(texture)
 {
 }
 
 void Maze::loadLevel(std::string name)
 {
+
+	m_mazeSize = sf::Vector2i(0, 0);
+	m_mazeData.clear();
+
+	m_pacWomanPosition = sf::Vector2i(0, 0);
+	m_ghostPositions.clear();
 	sf::Image levelData;
 
-	if(!levelData.loadFromFile("/home/asimoes/Documents/Udemy/SFML/PacWoman/assets/levels/level.png"))
+	if (!levelData.loadFromFile("assets/levels/" + name + ".png"))
         throw std::runtime_error("Failed to load level (" + name + ")");
+	// if(!levelData.loadFromFile("/home/asimoes/Documents/Udemy/SFML/PacWoman/assets/levels/level.png"))
+ //        throw std::runtime_error("Failed to load level (" + name + ")");
 
     m_mazeSize = sf::Vector2i(levelData.getSize());
     
@@ -66,17 +74,17 @@ void Maze::loadLevel(std::string name)
 	 wall.setSize(sf::Vector2f(32, 32));
 	 wall.setFillColor(sf::Color::Blue);
 	 		 	 
-	 // sf::Sprite border(m_texture);
-	 // border.setTextureRect(sf::IntRect(16, 0, 16, 32));
-	 // border.setOrigin(0, 16);
+	 sf::Sprite border(m_texture);
+	 border.setTextureRect(sf::IntRect(16, 0, 16, 32));
+	 border.setOrigin(0, 16);
 	 
-	 // sf::Sprite innerCorner(m_texture);
-	 // innerCorner.setTextureRect(sf::IntRect(0, 0, 16, 16));
-	 // innerCorner.setOrigin(0, 16);
+	 sf::Sprite innerCorner(m_texture);
+	 innerCorner.setTextureRect(sf::IntRect(0, 0, 16, 16));
+	 innerCorner.setOrigin(0, 16);
 	 
-	 // sf::Sprite outerCorner(m_texture);
-	 // outerCorner.setTextureRect(sf::IntRect(0, 16, 16, 16));
-	 // outerCorner.setOrigin(0, 16);
+	 sf::Sprite outerCorner(m_texture);
+	 outerCorner.setTextureRect(sf::IntRect(0, 16, 16, 16));
+	 outerCorner.setOrigin(0, 16);
 	 
 	 m_renderTexture.display();
 	 
@@ -89,81 +97,81 @@ void Maze::loadLevel(std::string name)
 	 		wall.setPosition(32*position.x, 32*position.y);
 			m_renderTexture.draw(wall);
 		
-			// border.setPosition(mapCellToPixel(position));
-			// innerCorner.setPosition(mapCellToPixel(position));
-			// outerCorner.setPosition(mapCellToPixel(position));
+			border.setPosition(mapCellToPixel(position));
+			innerCorner.setPosition(mapCellToPixel(position));
+			outerCorner.setPosition(mapCellToPixel(position));
 			
-			// if (!isWall(position + sf::Vector2i(1, 0)))
-			// {
-			// 	border.setRotation(0);
-			// 	m_renderTexture.draw(border);
-			// }
+			if (!isWall(position + sf::Vector2i(1, 0)))
+			{
+				border.setRotation(0);
+				m_renderTexture.draw(border);
+			}
 			
-			// if (!isWall(position + sf::Vector2i(0, 1)))
-			// {
-			// 	border.setRotation(90);
-			// 	m_renderTexture.draw(border);
-			// }
+			if (!isWall(position + sf::Vector2i(0, 1)))
+			{
+				border.setRotation(90);
+				m_renderTexture.draw(border);
+			}
 			
-			// if (!isWall(position + sf::Vector2i(-1, 0)))
-			// {
-			// 	border.setRotation(180);
-			// 	m_renderTexture.draw(border);
-			// }
+			if (!isWall(position + sf::Vector2i(-1, 0)))
+			{
+				border.setRotation(180);
+				m_renderTexture.draw(border);
+			}
 			
-			// if (!isWall(position + sf::Vector2i(0, -1)))
-			// {
-			// 	border.setRotation(270);
-			// 	m_renderTexture.draw(border);
-			// }
+			if (!isWall(position + sf::Vector2i(0, -1)))
+			{
+				border.setRotation(270);
+				m_renderTexture.draw(border);
+			}
 			
-			// if (isWall(position + sf::Vector2i(1, 0)) && isWall(position + sf::Vector2i(0, -1)))
-			// {
-			// 	innerCorner.setRotation(0);
-			// 	m_renderTexture.draw(innerCorner);
-			// }
+			if (isWall(position + sf::Vector2i(1, 0)) && isWall(position + sf::Vector2i(0, -1)))
+			{
+				innerCorner.setRotation(0);
+				m_renderTexture.draw(innerCorner);
+			}
 			
-			// if (isWall(position + sf::Vector2i(0, 1)) && isWall(position + sf::Vector2i(1, 0)))
-			// {
-			// 	innerCorner.setRotation(90);
-			// 	m_renderTexture.draw(innerCorner);
-			// }
+			if (isWall(position + sf::Vector2i(0, 1)) && isWall(position + sf::Vector2i(1, 0)))
+			{
+				innerCorner.setRotation(90);
+				m_renderTexture.draw(innerCorner);
+			}
 			
-			// if (isWall(position + sf::Vector2i(-1, 0)) && isWall(position + sf::Vector2i(0, 1)))
-			// {
-			// 	innerCorner.setRotation(180);
-			// 	m_renderTexture.draw(innerCorner);
-			// }
+			if (isWall(position + sf::Vector2i(-1, 0)) && isWall(position + sf::Vector2i(0, 1)))
+			{
+				innerCorner.setRotation(180);
+				m_renderTexture.draw(innerCorner);
+			}
 			
-			// if (isWall(position + sf::Vector2i(0, -1)) && isWall(position + sf::Vector2i(-1, 0)))
-			// {
-			// 	innerCorner.setRotation(270);
-			// 	m_renderTexture.draw(innerCorner);
-			// }
+			if (isWall(position + sf::Vector2i(0, -1)) && isWall(position + sf::Vector2i(-1, 0)))
+			{
+				innerCorner.setRotation(270);
+				m_renderTexture.draw(innerCorner);
+			}
 						
-			// if (!isWall(position + sf::Vector2i(1, 0)) && !isWall(position + sf::Vector2i(0, -1)))
-			// {
-			// 	outerCorner.setRotation(0);
-			// 	m_renderTexture.draw(outerCorner);
-			// }
+			if (!isWall(position + sf::Vector2i(1, 0)) && !isWall(position + sf::Vector2i(0, -1)))
+			{
+				outerCorner.setRotation(0);
+				m_renderTexture.draw(outerCorner);
+			}
 			
-			// if (!isWall(position + sf::Vector2i(0, 1)) && !isWall(position + sf::Vector2i(1, 0)))
-			// {
-			// 	outerCorner.setRotation(90);
-			// 	m_renderTexture.draw(outerCorner);
-			// }
+			if (!isWall(position + sf::Vector2i(0, 1)) && !isWall(position + sf::Vector2i(1, 0)))
+			{
+				outerCorner.setRotation(90);
+				m_renderTexture.draw(outerCorner);
+			}
 			
-			// if (!isWall(position + sf::Vector2i(-1, 0)) && !isWall(position + sf::Vector2i(0, 1)))
-			// {
-			// 	outerCorner.setRotation(180);
-			// 	m_renderTexture.draw(outerCorner);
-			// }
+			if (!isWall(position + sf::Vector2i(-1, 0)) && !isWall(position + sf::Vector2i(0, 1)))
+			{
+				outerCorner.setRotation(180);
+				m_renderTexture.draw(outerCorner);
+			}
 			
-			// if (!isWall(position + sf::Vector2i(0, -1)) && !isWall(position + sf::Vector2i(-1, 0)))
-			// {
-			// 	outerCorner.setRotation(270);
-			// 	m_renderTexture.draw(outerCorner);
-			// }			
+			if (!isWall(position + sf::Vector2i(0, -1)) && !isWall(position + sf::Vector2i(-1, 0)))
+			{
+				outerCorner.setRotation(270);
+				m_renderTexture.draw(outerCorner);
+			}			
 		 }
 	 }
 }
@@ -196,7 +204,6 @@ sf::Vector2i Maze::getSize() const
 {
 	return m_mazeSize;
 }
-
 
 sf::Vector2i Maze::getPacWomanPosition() const
 {
@@ -249,3 +256,40 @@ bool Maze::isWall(sf::Vector2i position) const
 	return m_mazeData[positionToIndex(position)] == Wall;
 }
 
+bool Maze::isDot(sf::Vector2i position) const
+{
+	return (m_mazeData[positionToIndex(position)] == Dot);
+}
+
+bool Maze::isSuperDot(sf::Vector2i position) const
+{
+	return (m_mazeData[positionToIndex(position)] == SuperDot);
+}
+
+bool Maze::isBonus(sf::Vector2i position) const
+{
+	return(m_mazeData[positionToIndex(position)] == Bonus);
+}
+
+bool Maze::isEmpty(sf::Vector2i position) const
+{
+	return(m_mazeData[positionToIndex(position)] == Empty);
+}
+void Maze::pickObject(sf::Vector2i position)
+{
+	assert(!isWall(position));
+	m_mazeData[positionToIndex(position)] = Empty;	
+}
+
+int Maze::getRemainingDots() const
+{
+	int remainingDots = 0;
+
+	for(uint i = 0; i < m_mazeData.size(); i++)
+	{
+		if(m_mazeData[i] == Dot || m_mazeData[i] == SuperDot)
+			remainingDots++;
+	}
+
+	return remainingDots;
+}

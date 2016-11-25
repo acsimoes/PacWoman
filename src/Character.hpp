@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "Maze.hpp"
+#include <array>
 
 class Character : public sf::Drawable, public sf::Transformable
 {
@@ -13,6 +14,9 @@ private:
 	sf::Vector2i m_nextDirection;
 	Maze* m_maze;
 
+protected:
+	virtual void changeDirection(){};
+
 public:
 	Character();
 	
@@ -22,6 +26,11 @@ public:
 	void setDirection(sf::Vector2i direction);
 	sf::Vector2i getDirection() const;
 	void setMaze(Maze* maze);
+	bool willMove();
+	sf::FloatRect getCollisionBox() const;
+
+	sf::Vector2i m_previousIntersection;
+	std::array<bool, 4> m_availableDirections;
 	
 };
 

@@ -24,6 +24,7 @@ public:
 	sf::Font& getFont();
 	sf::Texture& getLogo();
 	sf::Texture& getTexture();
+	sf::Vector2u getWindowSize();
 
 };
 

@@ -23,6 +23,7 @@ class PacWoman : public Character
 	public:
 	PacWoman(sf::Texture& texture); 
 	void die();
+	void reset();
 	
 	bool isDying() const;
 	bool isDead() const;

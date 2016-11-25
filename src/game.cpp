@@ -2,7 +2,7 @@
 #include <iostream>
 
 Game::Game()
-:m_window(sf::VideoMode(640, 480), "Pac Woman")
+:m_window(sf::VideoMode(480, 500), "Pac Woman")
 {
 	if (!m_font.loadFromFile("assets/font.ttf"))
 		throw std::runtime_error("Unable to load the font file");
@@ -14,10 +14,10 @@ Game::Game()
 		throw std::runtime_error("Unable to load the texture file");
 	
 	m_gameStates[GameState::NoCoin] = new NoCoinState(this);
-	m_gameStates[GameState::GetReady] = new GetReadyState(this);
 	m_gameStates[GameState::Playing] = new PlayingState(this);
-	m_gameStates[GameState::Lost] = new LostState(this);
-	m_gameStates[GameState::Won] = new WonState(this);
+	m_gameStates[GameState::GetReady] = new GetReadyState(this, m_gameStates[GameState::Playing]);
+	m_gameStates[GameState::Lost] = new LostState(this, m_gameStates[GameState::Playing]);
+	m_gameStates[GameState::Won] = new WonState(this, m_gameStates[GameState::Playing]);
 	
 	changeGameState(GameState::NoCoin);
 }
@@ -34,7 +34,7 @@ void Game::run()
 	while (m_window.isOpen())
     {
         sf::Event event;
-        int cbggount = 0;
+        // int count = 0;
         while (m_window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
@@ -86,4 +86,8 @@ sf::Texture& Game::getLogo()
 sf::Texture& Game::getTexture()
 {
 	return m_texture;
+}
+
+sf::Vector2u Game::getWindowSize(){
+	return m_window.getSize();
 }

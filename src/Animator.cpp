@@ -32,9 +32,10 @@ void Animator::update(sf::Time delta)
     if (!isPlaying())
         return;
 
+    
     m_timeBuffer += delta;
 
-    sf::Time frameDuration = m_duration / static_cast<float>(m_frames.size());
+    sf::Time frameDuration = m_duration / static_cast<float>(m_frames.size());    
 
     while (m_timeBuffer > frameDuration)
     {

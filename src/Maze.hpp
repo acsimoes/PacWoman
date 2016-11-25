@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include <cassert>
 
 class Maze : public sf::Drawable
 {
@@ -24,10 +25,10 @@ private:
 	std::vector<sf::Vector2i> m_ghostPositions;
 		
 	sf::RenderTexture m_renderTexture;
-	/*sf::Texture& m_texture;*/
+	sf::Texture& m_texture;
 
 public:	
-	Maze(/*sf::Texture& texture*/);
+	Maze(sf::Texture& texture);
 	void loadLevel(std::string name);
 	
 	sf::Vector2i getPacWomanPosition() const;
@@ -40,8 +41,15 @@ public:
 	sf::Vector2f mapCellToPixel(sf::Vector2i cell) const;
 	
 	bool isWall(sf::Vector2i position) const;
+	bool isDot(sf::Vector2i position) const;
+	bool isSuperDot(sf::Vector2i position) const;
+	bool isBonus(sf::Vector2i position) const;
+	bool isEmpty(sf::Vector2i position) const;
+	void pickObject(sf::Vector2i position);
 	
 	sf::Vector2i getSize() const;
+
+	int getRemainingDots() const;
 };
 
 #endif // MAZE_HPP

@@ -6,6 +6,14 @@
 #include "Ghost.hpp"
 #include "Maze.hpp"
 
+
+struct ScoreTable
+{
+	const int dot = 5;
+	const int superDot = 25;
+	const int ghost = 100;
+	const int bonus = 500;
+};
 class Game;
 
 class GameState
@@ -57,24 +65,6 @@ public:
 	bool m_displayText;
 };
 
-class GetReadyState : public GameState
-{
-public:
-
-	GetReadyState (Game* game);
-	~GetReadyState();
-	
-	void insertCoin();
-	void pressButton();
-	void moveStick(sf::Vector2i direction);
-	void update(sf::Time Delta);
-	void draw(sf::RenderWindow& window);
-	
-	private:
-	sf::Text m_text;
-		
-};
-
 class PlayingState : public GameState
 {
 public:
@@ -87,19 +77,59 @@ public:
 	void moveStick(sf::Vector2i direction);
 	void update(sf::Time Delta);
 	void draw(sf::RenderWindow& window);
+
+	void moveCharactersToInitialPosition();
+	void updateCameraPosition();
+
+	void loadNextLevel();
+	void resetToZero();
+	void resetLiveCount();
+	void resetCurrentLevel();
 	
 	private:
 	PacWoman* m_pacWoman;
 	std::vector<Ghost*> m_ghosts;
-	// Ghost m_ghost;
 	Maze m_maze;
+
+	sf::View m_camera;
+	sf::RenderTexture m_scene;
+
+	sf::Text m_scoreText;
+	sf::Text m_levelText;
+	sf::Text m_remainingDotsText;
+	sf::Sprite m_liveSprite[3];
+
+	int m_currentLevel;
+	int m_remainingDots;
+	int m_liveCount;
+	int m_score;
+	ScoreTable m_scoreTable;
+};
+
+class GetReadyState : public GameState
+{
+public:
+
+	GetReadyState (Game* game, GameState* playingState);
+	~GetReadyState();
+	
+	void insertCoin();
+	void pressButton();
+	void moveStick(sf::Vector2i direction);
+	void update(sf::Time Delta);
+	void draw(sf::RenderWindow& window);
+	
+	private:
+	sf::Text m_text;
+	PlayingState* m_playingState;
+		
 };
 
 class LostState : public GameState
 {
 public:
 
-	LostState (Game* game);
+	LostState (Game* game, GameState* playingState);
 	~LostState();
 	
 	void insertCoin();
@@ -112,13 +142,14 @@ public:
 	sf::Text m_text;
 	sf::Time m_countDown;
 	sf::Text m_countDownText;
+	PlayingState* m_playingState;
 };
 
 class WonState : public GameState
 {
 public:
 
-	WonState (Game* game);
+	WonState (Game* game, GameState* playingState);
 	~WonState();
 	
 	void insertCoin();
@@ -129,6 +160,7 @@ public:
 	
 	private:
 	sf::Text m_text;
+	PlayingState* m_playingState;
 };
 
 # endif // PACWOMAN_GAMESTATE_HPP
