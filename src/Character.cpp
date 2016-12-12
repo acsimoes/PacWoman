@@ -103,14 +103,10 @@ void Character::update(sf::Time delta)
                 i++;
             }
 
-            if (m_availableDirections != availableDirections)
-            {
+            m_previousIntersection = cellPosition;
+            m_availableDirections = availableDirections;
 
-                m_previousIntersection = cellPosition;
-                m_availableDirections = availableDirections;
-
-                changeDirection();
-            }
+            changeDirection();
         }
     }
 }

@@ -4,6 +4,7 @@
 #include "Animator.hpp"
 #include "PacWoman.hpp" 
 #include "Character.hpp"
+#include "GhostStates.hpp"
 
 class Ghost : public Character
 {
@@ -19,6 +20,12 @@ class Ghost : public Character
 	
 	Animator m_strongAnimator;
 	Animator m_weakAnimator;
+
+	Chase* m_chaseState;
+	Evade*  m_evadeState;
+	Dead* m_deadState;
+
+	GhostState* m_currentState;
 
 	public:
 	

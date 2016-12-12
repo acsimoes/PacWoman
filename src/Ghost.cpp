@@ -21,8 +21,7 @@ Ghost::Ghost(sf::Texture& texture, PacWoman *pacWoman)
     m_strongAnimator.play(sf::seconds(0.25), true);
     m_weakAnimator.play(sf::seconds(1), true);
 
-    std::cout << "Ghost can access pacWoman: " << m_pacWoman << std::endl;    
-
+    // Instanciate the different States!!!!
 }
 
 void Ghost::setWeak(sf::Time duration)

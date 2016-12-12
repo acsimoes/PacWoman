@@ -240,7 +240,7 @@ void PlayingState::update(sf::Time delta)
 	sf::Vector2f pixelPosition = m_pacWoman->getPosition();
 	sf::Vector2f offset(std::fmod(pixelPosition.x, 32), std::fmod(pixelPosition.y, 32));
 	offset -= sf::Vector2f(16, 16);
-	if(offset.x <= 2 && offset.x >= -2 && offset.y <= 2 && offset.y >= -2)
+	if(offset.x <= 5 && offset.x >= -5 && offset.y <= 5 && offset.y >= -5)
 	{
 		sf::Vector2i cellPosition = m_maze.mapPixelToCell(pixelPosition);
 
@@ -248,13 +248,11 @@ void PlayingState::update(sf::Time delta)
 		{
 			m_score += m_scoreTable.dot;
 			m_remainingDots--;
-			std::cout << "\n+++++++++++++++++++\nDot\n++++++++++++++++++\n";
 		}
 		else if(m_maze.isSuperDot(cellPosition))
 		{
 			m_score += m_scoreTable.superDot;
 			m_remainingDots--;
-			std::cout << "\n+++++++++++++++++++\nSuperDot\n++++++++++++++++++\n";
 
 			for(Ghost* ghost : m_ghosts)
 				ghost->setWeak(sf::seconds(5));
@@ -262,11 +260,9 @@ void PlayingState::update(sf::Time delta)
 		else if(m_maze.isBonus(cellPosition))
 		{
 			m_score += m_scoreTable.bonus;
-			std::cout << "\n+++++++++++++++++++\nBonus\n++++++++++++++++++\n";
 		}
 		else if(m_maze.isEmpty(cellPosition))
 		{
-			std::cout << "Empty\n";
 		}
 		
 		m_maze.pickObject(cellPosition);
