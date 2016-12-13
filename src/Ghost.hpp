@@ -6,6 +6,11 @@
 #include "Character.hpp"
 #include "GhostStates.hpp"
 
+class GhostState;
+class Evade;
+class Chase;
+class Dead;
+
 class Ghost : public Character
 {
 
@@ -21,6 +26,7 @@ class Ghost : public Character
 	Animator m_strongAnimator;
 	Animator m_weakAnimator;
 
+	friend class GhostState;
 	Chase* m_chaseState;
 	Evade*  m_evadeState;
 	Dead* m_deadState;

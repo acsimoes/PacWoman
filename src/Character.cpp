@@ -125,7 +125,7 @@ void Character::setMaze(Maze *maze)
 	m_maze = maze;
 }
 
-Maze* Character::getMaze()
+Maze* Character::getMaze() const
 {
 	return m_maze;
 }

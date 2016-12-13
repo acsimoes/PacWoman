@@ -79,46 +79,44 @@ void Ghost::update(sf::Time delta)
 
 void Ghost::changeDirection()
 {
+    static sf::Vector2i directions[4] = {
+        sf::Vector2i(1, 0),
+        sf::Vector2i(0, 1),
+        sf::Vector2i(-1, 0),
+        sf::Vector2i(0, -1)
+        };
 
+    std::map<float, sf::Vector2i> directionProb;
 
-    // static sf::Vector2i directions[4] = {
-    //     sf::Vector2i(1, 0),
-    //     sf::Vector2i(0, 1),
-    //     sf::Vector2i(-1, 0),
-    //     sf::Vector2i(0, -1)
-    //     };
+    float targetAngle;
 
-    // std::map<float, sf::Vector2i> directionProb;
+    sf::Vector2f distance = m_pacWoman->getPosition() - getPosition();
 
-    // float targetAngle;
+    targetAngle = std::atan2(distance.x, distance.y) * (180/3.14);  // in degrees
 
-    // sf::Vector2f distance = m_pacWoman->getPosition() - getPosition();
+    for(auto direction : directions){
+        float directionAngle = std::atan2(direction.x, direction.y) / (180/3.14);
 
-    // targetAngle = std::atan2(distance.x, distance.y) * (180/3.14);  // in degrees
+        //normalize the angle difference
+        float diff = 180 - std::abs(std::abs(directionAngle - targetAngle) - 180);
 
-    // for(auto direction : directions){
-    //     float directionAngle = std::atan2(direction.x, direction.y) / (180/3.14);
+        directionProb[diff] = direction;
+    }
 
-    //     //normalize the angle difference
-    //     float diff = 180 - std::abs(std::abs(directionAngle - targetAngle) - 180);
-
-    //     directionProb[diff] = direction;
-    // }
-
-    // auto it = directionProb.begin();
-    // do
-    // {
-    //     setDirection(it->second);
-    //     it++;
-    // }while(!willMove());
+    auto it = directionProb.begin();
+    do
+    {
+        setDirection(it->second);
+        it++;
+    }while(!willMove());
 }
 
 void Ghost::instanciateStates()
 {
     const Maze* maze = getMaze();
-    m_chaseState = new Chase(maze);
+    m_chaseState = new Chase(maze, m_pacWoman);
 
-    m_evadeState = new Evade(maze);
+    m_evadeState = new Evade(maze, m_pacWoman);
     
     sf::Vector2i homeCell = maze->mapPixelToCell(getPosition());
     m_deadState = new Dead(maze, homeCell);
