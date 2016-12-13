@@ -9,6 +9,10 @@ Ghost::Ghost(sf::Texture& texture, PacWoman *pacWoman)
 ,m_isWeak(false)
 ,m_weaknessDuration(sf::Time::Zero)
 ,m_pacWoman(pacWoman)
+,m_chaseState(nullptr)
+,m_evadeState(nullptr)
+,m_deadState(nullptr)
+,m_currentState(nullptr)
 {
 	setOrigin(20, 20);
 	
@@ -21,7 +25,6 @@ Ghost::Ghost(sf::Texture& texture, PacWoman *pacWoman)
     m_strongAnimator.play(sf::seconds(0.25), true);
     m_weakAnimator.play(sf::seconds(1), true);
 
-    // Instanciate the different States!!!!
 }
 
 void Ghost::setWeak(sf::Time duration)
@@ -76,34 +79,47 @@ void Ghost::update(sf::Time delta)
 
 void Ghost::changeDirection()
 {
-    static sf::Vector2i directions[4] = {
-        sf::Vector2i(1, 0),
-        sf::Vector2i(0, 1),
-        sf::Vector2i(-1, 0),
-        sf::Vector2i(0, -1)
-        };
 
-    std::map<float, sf::Vector2i> directionProb;
 
-    float targetAngle;
+    // static sf::Vector2i directions[4] = {
+    //     sf::Vector2i(1, 0),
+    //     sf::Vector2i(0, 1),
+    //     sf::Vector2i(-1, 0),
+    //     sf::Vector2i(0, -1)
+    //     };
 
-    sf::Vector2f distance = m_pacWoman->getPosition() - getPosition();
+    // std::map<float, sf::Vector2i> directionProb;
 
-    targetAngle = std::atan2(distance.x, distance.y) * (180/3.14);  // in degrees
+    // float targetAngle;
 
-    for(auto direction : directions){
-        float directionAngle = std::atan2(direction.x, direction.y) / (180/3.14);
+    // sf::Vector2f distance = m_pacWoman->getPosition() - getPosition();
 
-        //normalize the angle difference
-        float diff = 180 - std::abs(std::abs(directionAngle - targetAngle) - 180);
+    // targetAngle = std::atan2(distance.x, distance.y) * (180/3.14);  // in degrees
 
-        directionProb[diff] = direction;
-    }
+    // for(auto direction : directions){
+    //     float directionAngle = std::atan2(direction.x, direction.y) / (180/3.14);
 
-    auto it = directionProb.begin();
-    do
-    {
-        setDirection(it->second);
-        it++;
-    }while(!willMove());
+    //     //normalize the angle difference
+    //     float diff = 180 - std::abs(std::abs(directionAngle - targetAngle) - 180);
+
+    //     directionProb[diff] = direction;
+    // }
+
+    // auto it = directionProb.begin();
+    // do
+    // {
+    //     setDirection(it->second);
+    //     it++;
+    // }while(!willMove());
+}
+
+void Ghost::instanciateStates()
+{
+    const Maze* maze = getMaze();
+    m_chaseState = new Chase(maze);
+
+    m_evadeState = new Evade(maze);
+    
+    sf::Vector2i homeCell = maze->mapPixelToCell(getPosition());
+    m_deadState = new Dead(maze, homeCell);
 }

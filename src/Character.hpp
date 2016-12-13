@@ -26,6 +26,7 @@ public:
 	void setDirection(sf::Vector2i direction);
 	sf::Vector2i getDirection() const;
 	void setMaze(Maze* maze);
+	Maze* getMaze() const;
 	bool willMove();
 	sf::FloatRect getCollisionBox() const;
 

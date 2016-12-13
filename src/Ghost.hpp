@@ -43,6 +43,7 @@ class Ghost : public Character
 	void update(sf::Time delta);
 
 	void changeDirection();
+	void instanciateStates();
 	
 	
 };

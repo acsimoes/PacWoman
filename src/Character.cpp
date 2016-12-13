@@ -125,6 +125,11 @@ void Character::setMaze(Maze *maze)
 	m_maze = maze;
 }
 
+Maze* Character::getMaze()
+{
+	return m_maze;
+}
+
 bool Character::willMove(){
 	return !m_maze->isWall(m_previousIntersection + m_nextDirection);
 }
