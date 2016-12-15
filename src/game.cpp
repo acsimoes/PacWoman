@@ -18,6 +18,7 @@ Game::Game()
 	m_gameStates[GameState::GetReady] = new GetReadyState(this, m_gameStates[GameState::Playing]);
 	m_gameStates[GameState::Lost] = new LostState(this, m_gameStates[GameState::Playing]);
 	m_gameStates[GameState::Won] = new WonState(this, m_gameStates[GameState::Playing]);
+	m_gameStates[GameState::Test] = new TestState(this);
 	
 	changeGameState(GameState::NoCoin);
 }

@@ -27,6 +27,7 @@ class GameState
 		Playing,
 		Won,
 		Lost,
+		Test,
 		Count
 	};
 	
@@ -163,4 +164,44 @@ public:
 	PlayingState* m_playingState;
 };
 
+class TestState : public GameState
+{
+	private:
+	PacWoman* m_pacWoman;
+	std::vector<Ghost*> m_ghosts;
+	Maze m_maze;
+
+	sf::View m_camera;
+	sf::RenderTexture m_scene;
+
+	sf::Text m_scoreText;
+	sf::Text m_levelText;
+	sf::Text m_remainingDotsText;
+	sf::Sprite m_liveSprite[3];
+
+	int m_currentLevel;
+	int m_remainingDots;
+	int m_liveCount;
+	int m_score;
+	ScoreTable m_scoreTable;
+
+	public:
+
+	TestState (Game* game);
+	~TestState();
+	
+	void insertCoin();
+	void pressButton();
+	void moveStick(sf::Vector2i direction);
+	void update(sf::Time Delta);
+	void draw(sf::RenderWindow& window);
+
+	void moveCharactersToInitialPosition();
+	void updateCameraPosition();
+
+	void loadNextLevel();
+	void resetToZero();
+	void resetLiveCount();
+	void resetCurrentLevel();
+};
 # endif // PACWOMAN_GAMESTATE_HPP

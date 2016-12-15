@@ -5,8 +5,8 @@ src/test.cpp
 *src/*.o
 
 #executables
-main
 pac-woman
+test
 
 # folders
 src/section\ 4\ codes
