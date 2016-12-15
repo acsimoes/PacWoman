@@ -36,11 +36,11 @@ class Ghost : public Character
 
 	public:
 	
-	enum State
-	{
-		Strong,
-		Weak
-	};
+	// enum State
+	// {
+	// 	Strong,
+	// 	Weak
+	// };
 	
 	Ghost(sf::Texture& texture, PacWoman *pacWoman);
 	~Ghost();
@@ -51,7 +51,9 @@ class Ghost : public Character
 	void update(sf::Time delta);
 
 	void changeDirection();
+
 	void instanciateStates();
+	void changeState(State state);
 	
 	
 };

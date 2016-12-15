@@ -393,19 +393,21 @@ void PlayingState::loadNextLevel()
 		delete ghost;
 	m_ghosts.clear();
 	
-	// create new characters
+	// reposition pacWoman
+	auto pacWomanPosition = m_maze.getPacWomanPosition();
+	m_pacWoman->setPosition(m_maze.mapCellToPixel(pacWomanPosition));
+	m_pacWoman->setSpeed(speed+25);
+
+	// create new Ghosts
 	for(auto ghostPosition: m_maze.getGhostPositions())
 	{
 		Ghost* ghost = new Ghost(getGame()->getTexture(), m_pacWoman);
 		ghost->setMaze(&m_maze);
 		ghost->setPosition(m_maze.mapCellToPixel(ghostPosition));
 		ghost->setSpeed(speed);
+		ghost->instanciateStates();
 		m_ghosts.push_back(ghost);
 	}
-
-	auto pacWomanPosition = m_maze.getPacWomanPosition();
-	m_pacWoman->setPosition(m_maze.mapCellToPixel(pacWomanPosition));
-	m_pacWoman->setSpeed(speed+25);
 
 	m_camera.setCenter(m_pacWoman->getPosition());
 
@@ -691,19 +693,21 @@ void TestState::loadNextLevel()
 		delete ghost;
 	m_ghosts.clear();
 	
-	// create new characters
+	// reposition pacWoman
+	auto pacWomanPosition = m_maze.getPacWomanPosition();
+	m_pacWoman->setPosition(m_maze.mapCellToPixel(pacWomanPosition));
+	m_pacWoman->setSpeed(speed+25);
+
+	// create new Ghosts
 	for(auto ghostPosition: m_maze.getGhostPositions())
 	{
 		Ghost* ghost = new Ghost(getGame()->getTexture(), m_pacWoman);
 		ghost->setMaze(&m_maze);
 		ghost->setPosition(m_maze.mapCellToPixel(ghostPosition));
 		ghost->setSpeed(speed);
+		ghost->instanciateStates();
 		m_ghosts.push_back(ghost);
 	}
-
-	auto pacWomanPosition = m_maze.getPacWomanPosition();
-	m_pacWoman->setPosition(m_maze.mapCellToPixel(pacWomanPosition));
-	m_pacWoman->setSpeed(speed+25);
 
 	m_camera.setCenter(m_pacWoman->getPosition());
 

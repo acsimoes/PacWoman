@@ -1,5 +1,6 @@
 #include "GhostStates.hpp"
 #include <cfloat>       // for FLT_MAX
+#include <set>
 //DEBUG ONLY
 #include <iostream>
 //END of DEBUG
@@ -53,17 +54,19 @@ Chase::~Chase()
 
 void Chase::enter(Ghost* m_ghost)
 {
-	// play strong animator
-	// m_ghost->m_strongAnimator.play(sf::seconds(0.25), true);
-
+	std::cout << "At Chase::enter()\n";
 	sf::Time m_timeBuffer = sf::Time::Zero;
 	sf::Vector2f pacWomanPosition = m_pacWoman->getPosition();
+    std::cout << "pacWomanPosition = (" << pacWomanPosition.x << ", " << pacWomanPosition.y << ")\n";
 	m_goalCell = m_maze->mapPixelToCell(pacWomanPosition);
+    std::cout << "pacWomanCell = (" << m_goalCell.x << ", " << m_goalCell.y << ")\n";
 	m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
+    m_path = searchPath(m_currentCell, m_goalCell, m_maze);
 }
 
 void Chase::execute(Ghost* m_ghost, sf::Time delta)
 {
+    std::cout << "At Chase::execute()\n";
 	m_timeBuffer += delta;
 
 	// recalculate trajectory
@@ -108,6 +111,11 @@ void Chase::exit(Ghost* m_ghost)
 
 }
 
+void Chase::setUpdateDelay(sf::Time delay)
+{
+    m_updateGoalDelay = delay;
+}
+
 
 //---------------------------------- EVADE CLASS ---------------------------//
 
@@ -125,11 +133,8 @@ Evade::~Evade()
 }
 
 void Evade::enter(Ghost* m_ghost)
-{
-    // play weak animator
-    // m_ghost->m_weakAnimator.play(sf::seconds(0.25), true);
-    m_ghost->setWeak(sf::seconds(5));
-
+{   
+    std::cout << "At Evade::enter()\n";
     sf::Time m_timeBuffer = sf::Time::Zero;
     sf::Vector2f pacWomanPosition = m_pacWoman->getPosition();
     m_goalCell = m_maze->mapPixelToCell(pacWomanPosition);
@@ -227,7 +232,35 @@ struct VectorComparer
 
 inline float euclideanDistance(sf::Vector2i a, sf::Vector2i b)
 {
-    return(sqrt( (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y)));
+    return(sqrt( ((a.x-b.x)*(a.x-b.x)) + ((a.y-b.y)*(a.y-b.y)) ));
+}
+
+inline void printVector(sf::Vector2i v)
+{
+    std::cout << "(" << v.x << ", " << v.y << ")";
+}
+
+void printSet(std::set<sf::Vector2i, VectorComparer> set)
+{
+    std::cout << "Set:\t";
+    for(auto it = set.begin(); it != set.end(); ++it)
+    {
+        printVector(*it);
+        std::cout <<"\t"; 
+    }
+    std::cout << "\nEnd of Set\n";
+}
+
+void printPool(std::vector<searchNode> vec)
+{
+    std::cout << "VectorPool:\n";
+    for(searchNode Node : vec)
+    {
+        std::cout << "Cell = ";
+        printVector(Node.cell);
+        std::cout << "\t value = " << Node.value << std::endl;
+    }
+    std::cout << "End of VectorPool\n";
 }
 
 std::forward_list<sf::Vector2i>* searchPath(sf::Vector2i start, sf::Vector2i goal, const Maze* m_maze)
@@ -241,6 +274,8 @@ std::forward_list<sf::Vector2i>* searchPath(sf::Vector2i start, sf::Vector2i goa
         };
 
     std::vector<searchNode> searchPool;
+    std::set<sf::Vector2i, VectorComparer> alreadyVisited;
+
     searchNode currentNode;
     currentNode.cell = start;
     currentNode.value = euclideanDistance(start, goal);
@@ -249,22 +284,39 @@ std::forward_list<sf::Vector2i>* searchPath(sf::Vector2i start, sf::Vector2i goa
     std::map<sf::Vector2i, sf::Vector2i, VectorComparer> pathMap;   // maps every cell to which cell it came from
 
     bool reachedGoal = false;
+    int iterations = -1;
     while(!reachedGoal)
     {
         float min_value = FLT_MAX;
-        for(searchNode Node : searchPool)
+        int ind = -1;
+        for(uint i = 0; i < searchPool.size(); i++)
         {
-            if(min_value > Node.value)
+            if(min_value > searchPool[i].value)
             {
-                currentNode = Node;
-                min_value = Node.value;
+                currentNode = searchPool[i];
+                min_value = currentNode.value;
+                ind = i;
             }
         }
+        std::cout << "iterations = " << ++iterations << std::endl;
+        std::cout << "currentNode.cell = "; printVector(currentNode.cell); std::cout << "\n";
+        std::cout << "currentNode.value = " << currentNode.value << std::endl;
+        searchPool.erase(searchPool.begin()+ind);
+        alreadyVisited.insert(currentNode.cell);
+        // if(iterations % 5 == 0)
+        // {
+        //     printSet(alreadyVisited);
+        //     printPool(searchPool);
+        // }
 
         for(sf::Vector2i dir : directions){
 
             sf::Vector2i newCell = currentNode.cell + dir;
-            if(m_maze->isWall(newCell))
+            std::cout << "dir = "; printVector(dir); std::cout << "\n";
+            std::cout << "newCell = "; printVector(newCell); std::cout << "\n";
+            if(m_maze->isWall(newCell))      // If it is a Wall or is an already visited cell, ignore
+                continue;
+            else if(alreadyVisited.find(newCell) != alreadyVisited.end())
                 continue;
             else if(newCell == goal){
                 reachedGoal = true;
@@ -273,10 +325,12 @@ std::forward_list<sf::Vector2i>* searchPath(sf::Vector2i start, sf::Vector2i goa
             }
 
             pathMap[newCell] = currentNode.cell;        // add pair to pathMap
-            currentNode.cell = newCell;
-            currentNode.value = euclideanDistance(newCell, goal);
-            searchPool.push_back(currentNode);          // add to searchPool
+            searchNode newNode;
+            newNode.cell = newCell;
+            newNode.value = euclideanDistance(newCell, goal);
+            searchPool.push_back(newNode);          // add to searchPool
         }
+        
     }
 
     std::forward_list<sf::Vector2i> *path;
