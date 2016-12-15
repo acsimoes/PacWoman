@@ -1,5 +1,5 @@
-#ifndef GHOST_STATES_HPP
-#define GHOST_STATES_HPP
+#ifndef ABC_HPP
+#define ABC_HPP
 
 #include "Maze.hpp"
 #include "Ghost.hpp"
@@ -82,4 +82,4 @@ class Dead : public GhostState
 		void exit(Ghost* m_ghost);
 };
 
-#endif // GHOST_STATES_HPP
+#endif // ABC_HPP

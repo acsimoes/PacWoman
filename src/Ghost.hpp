@@ -6,10 +6,15 @@
 #include "Character.hpp"
 #include "GhostStates.hpp"
 
+enum State
+		{
+			ChaseState,
+			EvadeState,
+			DeadState,
+			Count
+		};
+
 class GhostState;
-class Evade;
-class Chase;
-class Dead;
 
 class Ghost : public Character
 {
@@ -26,12 +31,8 @@ class Ghost : public Character
 	Animator m_strongAnimator;
 	Animator m_weakAnimator;
 
-	friend class GhostState;
-	Chase* m_chaseState;
-	Evade*  m_evadeState;
-	Dead* m_deadState;
-
 	GhostState* m_currentState;
+	std::array<GhostState*, Count> m_ghostStates;
 
 	public:
 	
@@ -42,6 +43,7 @@ class Ghost : public Character
 	};
 	
 	Ghost(sf::Texture& texture, PacWoman *pacWoman);
+	~Ghost();
 	
 	void setWeak(sf::Time duration);
 	bool isWeak() const;
