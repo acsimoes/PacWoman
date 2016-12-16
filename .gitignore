@@ -7,6 +7,7 @@ src/test.cpp
 #executables
 pac-woman
 test
+Makefile.bak
 
 # folders
 src/section\ 4\ codes

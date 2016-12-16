@@ -278,7 +278,8 @@ void PlayingState::update(sf::Time delta)
 			{
 				std::cout << "kill Ghost\n";
 				//Ghost dies
-				m_ghosts.erase(std::find(m_ghosts.begin(), m_ghosts.end(), ghost));
+				//m_ghosts.erase(std::find(m_ghosts.begin(), m_ghosts.end(), ghost));
+				ghost->changeState(DeadState);
 				m_score += m_scoreTable.ghost;
 			}else
 			{
