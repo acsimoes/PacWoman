@@ -40,6 +40,7 @@ class Chase : public GhostState
 		sf::Time m_updateGoalDelay;
 		std::forward_list<sf::Vector2i> *m_path;
 		PacWoman* m_pacWoman;
+		bool m_killPlayer;
 
 	public:
 		Chase(const Maze* maze, PacWoman* pacWoman);
@@ -72,6 +73,9 @@ class Dead : public GhostState
 	private:
 		sf::Vector2i m_homeCell;
 		std::forward_list<sf::Vector2i> *m_path;
+		bool m_atHome;
+		sf::Time m_timeBuffer;
+		sf::Time m_deadDuration;
 
 	public:
 		Dead(const Maze* maze, sf::Vector2i home);
@@ -80,6 +84,8 @@ class Dead : public GhostState
 		void enter(Ghost* m_ghost);
 		void execute(Ghost* m_ghost, sf::Time delta);
 		void exit(Ghost* m_ghost);
+
+		void setDeadDuration(sf::Time time);
 };
 
 #endif // ABC_HPP

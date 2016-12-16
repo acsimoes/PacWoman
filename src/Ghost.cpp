@@ -55,7 +55,7 @@ void Ghost::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	target.draw(m_visual, states);
 }
 
-void Ghost::update(sf::Time delta)
+void Ghost::update(sf::Time delta)            
 {    
 	
 	if (m_isWeak)
@@ -125,9 +125,10 @@ void Ghost::instanciateStates()
     m_ghostStates[ChaseState] = new Chase(maze, m_pacWoman);
     m_ghostStates[EvadeState] = new Evade(maze, m_pacWoman);
     m_ghostStates[DeadState] = new Dead(maze, homeCell);
+    static_cast<Dead*>(m_ghostStates[DeadState])->setDeadDuration(sf::seconds(1));
 
     m_currentState = m_ghostStates[ChaseState];
-    static_cast<Chase*>(m_currentState)->setUpdateDelay(sf::seconds(1));
+    static_cast<Chase*>(m_currentState)->setUpdateDelay(sf::seconds(500));
     m_currentState->enter(this);
 }
 

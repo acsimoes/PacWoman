@@ -563,11 +563,12 @@ TestState::~TestState()
 
 void TestState::insertCoin()
 {
-	// std::cout << "m_pacWoman.die() triggered\n";
-	// m_pacWoman.die();
+	for(Ghost* ghost : m_ghosts)
+		ghost->changeState(DeadState);
 }
 void TestState::pressButton()
 {
+	m_pacWoman->reset();
 	resetToZero();
 }
 void TestState::moveStick(sf::Vector2i direction)
@@ -603,7 +604,7 @@ void TestState::update(sf::Time delta)
 			{
 				std::cout << "kill Pac-Woman\n";
 				//Pac-Woman dies
-				//m_pacWoman->die();
+				m_pacWoman->die();
 			}
 		}
 	}
@@ -699,15 +700,22 @@ void TestState::loadNextLevel()
 	m_pacWoman->setSpeed(speed+25);
 
 	// create new Ghosts
-	for(auto ghostPosition: m_maze.getGhostPositions())
-	{
-		Ghost* ghost = new Ghost(getGame()->getTexture(), m_pacWoman);
-		ghost->setMaze(&m_maze);
-		ghost->setPosition(m_maze.mapCellToPixel(ghostPosition));
-		ghost->setSpeed(speed);
-		ghost->instanciateStates();
-		m_ghosts.push_back(ghost);
-	}
+	auto ghostPosition = m_maze.getGhostPositions()[0];
+	Ghost* ghost = new Ghost(getGame()->getTexture(), m_pacWoman);
+	ghost->setMaze(&m_maze);
+	ghost->setPosition(m_maze.mapCellToPixel(ghostPosition));
+	ghost->setSpeed(speed);
+	ghost->instanciateStates();
+	m_ghosts.push_back(ghost);
+	// for(auto ghostPosition: m_maze.getGhostPositions())
+	// {
+	// 	Ghost* ghost = new Ghost(getGame()->getTexture(), m_pacWoman);
+	// 	ghost->setMaze(&m_maze);
+	// 	ghost->setPosition(m_maze.mapCellToPixel(ghostPosition));
+	// 	ghost->setSpeed(speed);
+	// 	ghost->instanciateStates();
+	// 	m_ghosts.push_back(ghost);
+	// }
 
 	m_camera.setCenter(m_pacWoman->getPosition());
 

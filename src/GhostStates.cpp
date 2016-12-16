@@ -43,6 +43,7 @@ Chase::Chase(const Maze* maze, PacWoman* pacWoman)
 ,m_updateGoalDelay(sf::Time::Zero)
 ,m_path(nullptr)
 ,m_pacWoman(pacWoman)
+,m_killPlayer(false)
 {
 
 }
@@ -62,6 +63,7 @@ void Chase::enter(Ghost* m_ghost)
     std::cout << "pacWomanCell = (" << m_goalCell.x << ", " << m_goalCell.y << ")\n";
 	m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
     m_path = searchPath(m_currentCell, m_goalCell, m_maze);
+    m_killPlayer = false;
 }
 
 void Chase::execute(Ghost* m_ghost, sf::Time delta)
@@ -69,41 +71,58 @@ void Chase::execute(Ghost* m_ghost, sf::Time delta)
     std::cout << "At Chase::execute()\n";
 	m_timeBuffer += delta;
 
-	// recalculate trajectory
-	if(m_timeBuffer >= m_updateGoalDelay)
-	{
-		sf::Vector2f pacWomanPosition = m_pacWoman->getPosition();
-		m_goalCell = m_maze->mapPixelToCell(pacWomanPosition);
-
-        m_path->clear();
-        m_path = searchPath(m_currentCell, m_goalCell, m_maze);
-	}
-
-    m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
-
-    // update direction
-    std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
-    std::cout << "m_path.being() = (" << m_path->begin()->x << ", " << m_path->begin()->y << ")\n";
-    if(m_currentCell != *m_path->begin())
+    if(!m_killPlayer)
     {
-        m_path->pop_front();
-
-        sf::Vector2i nextCell = *(++m_path->begin());
-        if(m_currentCell + m_ghost->getDirection() != nextCell)
+        // recalculate trajectory
+        if(m_timeBuffer >= m_updateGoalDelay)
         {
-            std::cout << "Changing Directions!!!!!!\n";
-            std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
-            std::cout << "nextCell = (" << nextCell.x << ", " << nextCell.y << ")\t";
-            sf::Vector2i newDirection = nextCell - m_currentCell;
-            std::cout << "newDirection = (" << newDirection.x << ", " << newDirection.y << ")\t";            
-            m_ghost->setDirection(newDirection);
+            sf::Vector2f pacWomanPosition = m_pacWoman->getPosition();
+            m_goalCell = m_maze->mapPixelToCell(pacWomanPosition);
+
+            m_path->clear();
+            m_path = searchPath(m_currentCell, m_goalCell, m_maze);
+        }
+
+        m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
+
+        // update direction
+        std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
+        std::cout << "m_path.being() = (" << m_path->begin()->x << ", " << m_path->begin()->y << ")\n";
+        
+        if(m_currentCell == *m_path->begin())
+        {
+            m_path->pop_front();
+            if(m_path->empty())         // if reached Goal
+            {
+                if(m_pacWoman->isDead() || m_pacWoman->isDying())       // if PacWoman is dead/dying, stops
+                {
+                    std::cout << "Player is dead, stopping!\n";
+                    m_ghost->setDirection(sf::Vector2i(0,0));
+                    m_killPlayer = true;
+                    return;                                             
+                }
+                else{                                                   // otherwise search PacWoman location again
+                    std::cout << "Path is empty, searching again!\n";
+                    sf::Vector2f pacWomanPosition = m_pacWoman->getPosition();
+                    m_goalCell = m_maze->mapPixelToCell(pacWomanPosition);
+                    m_path = searchPath(m_currentCell, m_goalCell, m_maze);
+                    std::cout << "Finished searching!\n";
+                }
+            }
+
+            sf::Vector2i nextCell = *(m_path->begin());
+            if(m_currentCell + m_ghost->getDirection() != nextCell)
+            {
+                std::cout << "Changing Directions!!!!!!\n";
+                std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
+                std::cout << "nextCell = (" << nextCell.x << ", " << nextCell.y << ")\t";
+                sf::Vector2i newDirection = nextCell - m_currentCell;
+                std::cout << "newDirection = (" << newDirection.x << ", " << newDirection.y << ")\t";
+                m_ghost->setDirection(newDirection);
+            }
         }
     }
 
-
-	// m_ghost->m_strongAnimator.update(delta);
-    // m_ghost->m_strongAnimator.animate(m_visual);
-    // Character::update(delta);
 }
 
 void Chase::exit(Ghost* m_ghost)
@@ -157,6 +176,9 @@ Dead::Dead(const Maze* maze, sf::Vector2i home)
 :GhostState(maze)
 ,m_homeCell(home)
 ,m_path(nullptr)
+,m_atHome(false)
+,m_timeBuffer(sf::Time::Zero)
+,m_deadDuration(sf::Time::Zero)
 
 {
 
@@ -175,40 +197,61 @@ void Dead::enter(Ghost* m_ghost)
     if(m_path != NULL)
         m_path->clear();
     m_path = searchPath(m_currentCell, m_goalCell, m_maze);
+
+    m_timeBuffer = sf::Time::Zero;
+    m_atHome = false;
 }
 
 void Dead::execute(Ghost* m_ghost, sf::Time delta)
 {
-    m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
 
-    // update direction
-    std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
-    std::cout << "m_path.being() = (" << m_path->begin()->x << ", " << m_path->begin()->y << ")\n";
-    if(m_currentCell != *m_path->begin())
+    if(m_atHome)
     {
-        m_path->pop_front();
-
-        sf::Vector2i nextCell = *(++m_path->begin());
-        if(m_currentCell + m_ghost->getDirection() != nextCell)
+        m_timeBuffer += delta;
+        if(m_timeBuffer >= m_deadDuration)
         {
-            std::cout << "Changing Directions!!!!!!\n";
-            std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
-            std::cout << "nextCell = (" << nextCell.x << ", " << nextCell.y << ")\t";
-            sf::Vector2i newDirection = nextCell - m_currentCell;
-            std::cout << "newDirection = (" << newDirection.x << ", " << newDirection.y << ")\t";
-            m_ghost->setDirection(newDirection);
+            m_ghost->changeState(ChaseState);
+            return;
         }
     }
+    else{
+        m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
 
+        // update direction
+        std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
+        std::cout << "m_path.begin() = (" << m_path->begin()->x << ", " << m_path->begin()->y << ")\n";
 
-    // m_ghost->m_weakAnimator.update(delta);
-    // m_ghost->m_weakAnimator.animate(m_visual);
-    // Character::update(delta);
+        if(m_currentCell == *m_path->begin())
+        {
+            m_path->pop_front();
+            if(m_path->empty())
+            {
+                m_atHome = true;
+                return;
+            }
+
+            sf::Vector2i nextCell = *(m_path->begin());
+            if(m_currentCell + m_ghost->getDirection() != nextCell)
+            {
+                std::cout << "Changing Directions!!!!!!\n";
+                std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
+                std::cout << "nextCell = (" << nextCell.x << ", " << nextCell.y << ")\t";
+                sf::Vector2i newDirection = nextCell - m_currentCell;
+                std::cout << "newDirection = (" << newDirection.x << ", " << newDirection.y << ")\t";
+                m_ghost->setDirection(newDirection);
+            }
+        }
+    }
 }
 
 void Dead::exit(Ghost* m_ghost)
 {
     // TO COMPLETE
+}
+
+void Dead::setDeadDuration(sf::Time duration)
+{
+    m_deadDuration = duration;
 }
 
 //-------------------------------- SEARCH FUNTION --------------------------//
@@ -265,6 +308,13 @@ void printPool(std::vector<searchNode> vec)
 
 std::forward_list<sf::Vector2i>* searchPath(sf::Vector2i start, sf::Vector2i goal, const Maze* m_maze)
 {
+
+    if(goal == start)
+    {
+        std::forward_list<sf::Vector2i> path;
+        path.push_front(goal);
+        return &path;
+    }
     // if at an intersection, call change direction
     static sf::Vector2i directions[4] = {
         sf::Vector2i(1, 0),
@@ -280,6 +330,7 @@ std::forward_list<sf::Vector2i>* searchPath(sf::Vector2i start, sf::Vector2i goa
     currentNode.cell = start;
     currentNode.value = euclideanDistance(start, goal);
     searchPool.push_back(currentNode);
+
 
     std::map<sf::Vector2i, sf::Vector2i, VectorComparer> pathMap;   // maps every cell to which cell it came from
 
