@@ -21,6 +21,7 @@ class GhostState
 	protected:
 		sf::Vector2i m_currentCell;
 		sf::Vector2i m_goalCell;
+		std::forward_list<sf::Vector2i> *m_path;
 
 		const Maze* m_maze;
 
@@ -38,7 +39,6 @@ class Chase : public GhostState
 	private:
 		sf::Time m_timeBuffer;
 		sf::Time m_updateGoalDelay;
-		std::forward_list<sf::Vector2i> *m_path;
 		PacWoman* m_pacWoman;
 		bool m_killPlayer;
 
@@ -58,6 +58,8 @@ class Evade : public GhostState
 	private:
 		sf::Time m_timeBuffer;
 		PacWoman* m_pacWoman;
+		float m_safeDistance;
+		sf::Vector2i m_endOfPath;
 
 	public:
 		Evade(const Maze* maze, PacWoman* pacWoman);
@@ -66,13 +68,14 @@ class Evade : public GhostState
 		void enter(Ghost* m_ghost);
 		void execute(Ghost* m_ghost, sf::Time delta);
 		void exit(Ghost* m_ghost);
+
+		void setSafeDistance(float distance);
 };
 
 class Dead : public GhostState
 {
 	private:
 		sf::Vector2i m_homeCell;
-		std::forward_list<sf::Vector2i> *m_path;
 		bool m_atHome;
 		sf::Time m_timeBuffer;
 		sf::Time m_deadDuration;

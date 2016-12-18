@@ -66,6 +66,7 @@ void Ghost::update(sf::Time delta)
         { 
             m_isWeak = false;
             m_strongAnimator.play(sf::seconds(0.25), true);
+            changeState(ChaseState);
         }
         else{                                           // Play weak animation
             m_weakAnimator.update(delta);

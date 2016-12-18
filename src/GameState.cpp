@@ -565,7 +565,7 @@ TestState::~TestState()
 void TestState::insertCoin()
 {
 	for(Ghost* ghost : m_ghosts)
-		ghost->changeState(DeadState);
+		ghost->changeState(EvadeState);
 }
 void TestState::pressButton()
 {
