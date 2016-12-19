@@ -50,17 +50,17 @@ void Maze::loadLevel(std::string name)
 				//pacwoman position
 				m_pacWomanPosition = sf::Vector2i(x, y);
 				std::cout << "pacWomanPosition = (" << x << ", " << y << ")\n";
-	                m_mazeData.push_back(Empty);
+	            m_mazeData.push_back(Empty);
 	        }
 	        else if (cellData == sf::Color::Red)
 	        {
 				//ghost position
 				m_ghostPositions.push_back(sf::Vector2i(x, y));
-	                m_mazeData.push_back(Empty);
+	            m_mazeData.push_back(Empty);
 	        }
 	        else
 	        {
-	                m_mazeData.push_back(Empty);
+	            m_mazeData.push_back(Empty);
 	        }
 		 }
 	 }

@@ -76,14 +76,14 @@ void PacWoman::update(sf::Time delta)
     }
     else
     {
-        std::cout << "Die Animation Update!\n";
+        // std::cout << "Die Animation Update!\n";
         m_dieAnimator.update(delta);
-        std::cout << "Die Animation animate!\n";
+        // std::cout << "Die Animation animate!\n";
         m_dieAnimator.animate(m_visual);
 
         if (!m_dieAnimator.isPlaying())
         {
-            std::cout << "Finished diying\n";
+            // std::cout << "Finished diying\n";
             m_isDying = false;
             m_isDead = true;
         }

@@ -7,6 +7,7 @@
 Ghost::Ghost(sf::Texture& texture, PacWoman *pacWoman)
 :m_visual(texture)
 ,m_isWeak(false)
+,m_isDead(false)
 ,m_weaknessDuration(sf::Time::Zero)
 ,m_pacWoman(pacWoman)
 ,m_currentState(nullptr)
@@ -48,6 +49,24 @@ bool Ghost::isWeak() const
 	return m_isWeak;
 }
 
+bool Ghost::isDead() const
+{
+    return m_isDead;
+}
+
+void Ghost::setDead(bool dead)
+{
+    m_isDead = dead;
+}
+
+void Ghost::kill()
+{
+    m_isDead = true;
+    changeState(DeadState);
+    std::cout << "Ghost was killed!\t m_isDead = " << m_isDead << std::endl;
+
+}
+
 void Ghost::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	states.transform *= getTransform();
@@ -57,12 +76,12 @@ void Ghost::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void Ghost::update(sf::Time delta)            
 {    
-	
-	if (m_isWeak)
+	std::cout << "m_isDead = " << m_isDead << std::endl;
+	if (m_isWeak || m_isDead)
     {
         m_weaknessDuration -= delta;
 
-        if (m_weaknessDuration <= sf::Time::Zero)       // change back to strong
+        if (m_weaknessDuration <= sf::Time::Zero && !m_isDead)       // change back to strong
         { 
             m_isWeak = false;
             m_strongAnimator.play(sf::seconds(0.25), true);
@@ -123,13 +142,17 @@ void Ghost::instanciateStates()
     const Maze* maze = getMaze();
     sf::Vector2i homeCell = maze->mapPixelToCell(getPosition());
 
-    m_ghostStates[ChaseState] = new Chase(maze, m_pacWoman);
-    m_ghostStates[EvadeState] = new Evade(maze, m_pacWoman);
-    m_ghostStates[DeadState] = new Dead(maze, homeCell);
+    m_ghostStates[ChaseState] = new Chase(maze, m_pacWoman, homeCell);
+    m_ghostStates[EvadeState] = new Evade(maze, m_pacWoman, homeCell);
+    m_ghostStates[DeadState] = new Dead(maze, m_pacWoman, homeCell);
+
+    m_ghostStates[ChaseState]->setMaxSpeed(getSpeed());
+    m_ghostStates[EvadeState]->setMaxSpeed(getSpeed());
     static_cast<Dead*>(m_ghostStates[DeadState])->setDeadDuration(sf::seconds(1));
+    m_ghostStates[DeadState]->setMaxSpeed(getSpeed());
 
     m_currentState = m_ghostStates[ChaseState];
-    static_cast<Chase*>(m_currentState)->setUpdateDelay(sf::seconds(500));
+    static_cast<Chase*>(m_currentState)->setUpdateDelay(sf::seconds(1));
     m_currentState->enter(this);
 }
 

@@ -22,16 +22,21 @@ class GhostState
 		sf::Vector2i m_currentCell;
 		sf::Vector2i m_goalCell;
 		std::forward_list<sf::Vector2i> *m_path;
+		PacWoman* m_pacWoman;
+		sf::Vector2i m_homeCell;
+		float m_MAXSPEED;
 
 		const Maze* m_maze;
 
 	public:
-		GhostState(const Maze* maze);
+		GhostState(const Maze* maze, PacWoman* pacWoman, sf::Vector2i home);
 		virtual ~GhostState();
 
 		virtual void enter(Ghost* m_ghost);
 		virtual void execute(Ghost* m_ghost, sf::Time delta);
 		virtual void exit(Ghost* m_ghost);
+
+		void setMaxSpeed(float speed);
 };
 
 class Chase : public GhostState
@@ -39,11 +44,10 @@ class Chase : public GhostState
 	private:
 		sf::Time m_timeBuffer;
 		sf::Time m_updateGoalDelay;
-		PacWoman* m_pacWoman;
 		bool m_killPlayer;
 
 	public:
-		Chase(const Maze* maze, PacWoman* pacWoman);
+		Chase(const Maze* maze, PacWoman* pacWoman, sf::Vector2i);
 		~Chase();
 
 		void enter(Ghost* m_ghost);
@@ -57,12 +61,11 @@ class Evade : public GhostState
 {
 	private:
 		sf::Time m_timeBuffer;
-		PacWoman* m_pacWoman;
 		float m_safeDistance;
 		sf::Vector2i m_endOfPath;
 
 	public:
-		Evade(const Maze* maze, PacWoman* pacWoman);
+		Evade(const Maze* maze, PacWoman* pacWoman, sf::Vector2i);
 		~Evade();
 
 		void enter(Ghost* m_ghost);
@@ -75,13 +78,12 @@ class Evade : public GhostState
 class Dead : public GhostState
 {
 	private:
-		sf::Vector2i m_homeCell;
 		bool m_atHome;
 		sf::Time m_timeBuffer;
 		sf::Time m_deadDuration;
 
 	public:
-		Dead(const Maze* maze, sf::Vector2i home);
+		Dead(const Maze* maze, PacWoman* pacWoman, sf::Vector2i home);
 		~Dead();
 
 		void enter(Ghost* m_ghost);

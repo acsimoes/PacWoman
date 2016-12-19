@@ -25,6 +25,7 @@ class Ghost : public Character
 	sf::Sprite m_visual;
 
 	bool m_isWeak;
+	bool m_isDead;
 	sf::Time m_weaknessDuration;
 	PacWoman* m_pacWoman;
 	
@@ -47,6 +48,9 @@ class Ghost : public Character
 	
 	void setWeak(sf::Time duration);
 	bool isWeak() const;
+	bool isDead() const;
+	void setDead(bool dead);
+	void kill();
 	
 	void update(sf::Time delta);
 

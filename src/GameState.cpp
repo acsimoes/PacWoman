@@ -274,16 +274,15 @@ void PlayingState::update(sf::Time delta)
 		sf::FloatRect instersection;
 		if(ghost->getCollisionBox().intersects(m_pacWoman->getCollisionBox(), instersection))
 		{
-			if(ghost->isWeak())
+			if(ghost->isWeak() && !ghost->isDead())
 			{
-				std::cout << "kill Ghost\n";
+				// std::cout << "kill Ghost\n";
 				//Ghost dies
-				//m_ghosts.erase(std::find(m_ghosts.begin(), m_ghosts.end(), ghost));
-				ghost->changeState(DeadState);
+				ghost->kill();
 				m_score += m_scoreTable.ghost;
-			}else
+			}else if(!ghost->isWeak() && !ghost->isDead())
 			{
-				std::cout << "kill Pac-Woman\n";
+				// std::cout << "kill Pac-Woman\n";
 				//Pac-Woman dies
 				m_pacWoman->die();
 			}
@@ -342,6 +341,7 @@ void PlayingState::moveCharactersToInitialPosition(){
 	auto ghostPosition = m_maze.getGhostPositions();
 	for (uint i = 0; i < m_ghosts.size(); i++){
 		m_ghosts[i]->setPosition(m_maze.mapCellToPixel(ghostPosition[i]));
+		m_ghosts[i]->kill();					// Ghosts start in DeadState so they have a small delay before they start chasing
 	}
 
 	updateCameraPosition();
@@ -389,6 +389,7 @@ void PlayingState::loadNextLevel()
 	//Change Speed according to new level
 	float speed = 100 + (speedLevel * 50);
 
+	std::cout << "m_ghosts.size() = " << m_ghosts.size() << std::endl;
 	// Destroy previous characters
 	for(Ghost* ghost : m_ghosts)
 		delete ghost;
@@ -441,36 +442,36 @@ void PlayingState::resetCurrentLevel()
 	loadNextLevel();
 }
 
-//------------------------------------- WON STATE ------------------------------///
-
-void WonState::insertCoin()
-{
-	
-}
-void WonState::pressButton()
-{
-	
-}
-void WonState::moveStick(sf::Vector2i direction)
-{
-	
-}
-void WonState::update(sf::Time delta)
-{
-	static sf::Time timeBuffer = sf::Time::Zero;
-	timeBuffer += delta;
-	
-	if (timeBuffer.asSeconds() > 5)
+// ------------------------------------- WON STATE ------------------------------///
+// {
+	void WonState::insertCoin()
 	{
-		getGame()->changeGameState(GameState::GetReady);
+		
 	}
-			
-}
-void WonState::draw(sf::RenderWindow& window)
-{
-	window.draw(m_text);
-}
-
+	void WonState::pressButton()
+	{
+		
+	}
+	void WonState::moveStick(sf::Vector2i direction)
+	{
+		
+	}
+	void WonState::update(sf::Time delta)
+	{
+		static sf::Time timeBuffer = sf::Time::Zero;
+		timeBuffer += delta;
+		
+		if (timeBuffer.asSeconds() > 5)
+		{
+			getGame()->changeGameState(GameState::GetReady);
+		}
+				
+	}
+	void WonState::draw(sf::RenderWindow& window)
+	{
+		window.draw(m_text);
+	}
+// }
 //------------------------------------LOST_STATE------------------------------------------------------
 void LostState::insertCoin()
 {

@@ -10,13 +10,15 @@ void printPath(std::forward_list<sf::Vector2i>* path);
 std::forward_list<sf::Vector2i>* searchPath(sf::Vector2i start, sf::Vector2i goal, const Maze* m_maze);
 std::forward_list<sf::Vector2i>* evadePath(sf::Vector2i start, sf::Vector2i player, const Maze* m_maze, int m_safeDistance, sf::Vector2i* pointerLastElement);
 
-GhostState::GhostState(const Maze* maze)
+GhostState::GhostState(const Maze* maze, PacWoman* pacWoman, sf::Vector2i home)
 :m_currentCell(sf::Vector2i(0,0))
 ,m_goalCell(sf::Vector2i(0,0))
 ,m_path(nullptr)
+,m_pacWoman(pacWoman)
+,m_homeCell(home)
+,m_MAXSPEED(50.0)
 ,m_maze(maze)
 {
-
 }
 
 GhostState::~GhostState()
@@ -39,13 +41,17 @@ void GhostState::exit(Ghost* m_ghost)
 
 }
 
+void GhostState::setMaxSpeed(float speed)
+{
+    m_MAXSPEED = speed;
+}
+
 //-------------------------------------- CHASE CLASS -----------------------------//
 
-Chase::Chase(const Maze* maze, PacWoman* pacWoman)
-:GhostState(maze)
+Chase::Chase(const Maze* maze, PacWoman* pacWoman, sf::Vector2i home)
+:GhostState(maze, pacWoman, home)
 ,m_timeBuffer(sf::Time::Zero)
-,m_updateGoalDelay(sf::Time::Zero)
-,m_pacWoman(pacWoman)
+,m_updateGoalDelay(sf::seconds(1))
 ,m_killPlayer(false)
 {
 
@@ -61,17 +67,16 @@ void Chase::enter(Ghost* m_ghost)
 	std::cout << "At Chase::enter()\n";
 	sf::Time m_timeBuffer = sf::Time::Zero;
 	sf::Vector2f pacWomanPosition = m_pacWoman->getPosition();
-	std::cout << "pacWomanPosition = (" << pacWomanPosition.x << ", " << pacWomanPosition.y << ")\n";
 	m_goalCell = m_maze->mapPixelToCell(pacWomanPosition);
-	std::cout << "pacWomanCell = (" << m_goalCell.x << ", " << m_goalCell.y << ")\n";
 	m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
 	m_path = searchPath(m_currentCell, m_goalCell, m_maze);
 	m_killPlayer = false;
+    m_ghost->setSpeed(m_MAXSPEED);
 }
 
 void Chase::execute(Ghost* m_ghost, sf::Time delta)
 {
-	std::cout << "At Chase::execute()\n";
+	// std::cout << "At Chase::execute()\n";
 	m_timeBuffer += delta;
 
 	if(!m_killPlayer)
@@ -89,8 +94,8 @@ void Chase::execute(Ghost* m_ghost, sf::Time delta)
 		m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
 
         // update direction
-		std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
-		std::cout << "m_path.being() = (" << m_path->begin()->x << ", " << m_path->begin()->y << ")\n";
+		// std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
+		// std::cout << "m_path.being() = (" << m_path->begin()->x << ", " << m_path->begin()->y << ")\n";
 
 		if(m_currentCell == *m_path->begin())
 		{
@@ -99,29 +104,29 @@ void Chase::execute(Ghost* m_ghost, sf::Time delta)
             {
                 if(m_pacWoman->isDead() || m_pacWoman->isDying())       // if PacWoman is dead/dying, stops
                 {
-                	std::cout << "Player is dead, stopping!\n";
+                	// std::cout << "Player is dead, stopping!\n";
                 	m_ghost->setDirection(sf::Vector2i(0,0));
                 	m_killPlayer = true;
                 	return;                                             
                 }
                 else{                                                   // otherwise search PacWoman location again
-                	std::cout << "Path is empty, searching again!\n";
+                	// std::cout << "Path is empty, searching again!\n";
                 	sf::Vector2f pacWomanPosition = m_pacWoman->getPosition();
                 	m_goalCell = m_maze->mapPixelToCell(pacWomanPosition);
                 	delete m_path;
                 	m_path = searchPath(m_currentCell, m_goalCell, m_maze);
-                	std::cout << "Finished searching!\n";
+                	// std::cout << "Finished searching!\n";
                 }
             }
 
             sf::Vector2i nextCell = *(m_path->begin());
             if(m_currentCell + m_ghost->getDirection() != nextCell)
             {
-            	std::cout << "Changing Directions!!!!!!\n";
-            	std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
-            	std::cout << "nextCell = (" << nextCell.x << ", " << nextCell.y << ")\t";
+            	// std::cout << "Changing Directions!!!!!!\n";
+            	// std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
+            	// std::cout << "nextCell = (" << nextCell.x << ", " << nextCell.y << ")\t";
             	sf::Vector2i newDirection = nextCell - m_currentCell;
-            	std::cout << "newDirection = (" << newDirection.x << ", " << newDirection.y << ")\t";
+            	// std::cout << "newDirection = (" << newDirection.x << ", " << newDirection.y << ")\t";
             	m_ghost->setDirection(newDirection);
             }
         }
@@ -142,10 +147,9 @@ void Chase::setUpdateDelay(sf::Time delay)
 
 //---------------------------------- EVADE CLASS ---------------------------//
 
-Evade::Evade(const Maze* maze, PacWoman* pacWoman)
-:GhostState(maze)
+Evade::Evade(const Maze* maze, PacWoman* pacWoman, sf::Vector2i home)
+:GhostState(maze, pacWoman, home)
 ,m_timeBuffer(sf::Time::Zero)
-,m_pacWoman(pacWoman)
 ,m_safeDistance(6.0)
 ,m_endOfPath(sf::Vector2i(0,0))
 {
@@ -159,17 +163,18 @@ Evade::~Evade()
 
 void Evade::enter(Ghost* m_ghost)
 {   
-	std::cout << "At Evade::enter()\n";
+	// std::cout << "At Evade::enter()\n";
 	sf::Time m_timeBuffer = sf::Time::Zero;
 	sf::Vector2f pacWomanPosition = m_pacWoman->getPosition();
 	m_goalCell = m_maze->mapPixelToCell(pacWomanPosition);
 	m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
 	m_path = evadePath(m_currentCell, m_goalCell, m_maze, m_safeDistance, &m_endOfPath);
+    m_ghost->setSpeed(m_MAXSPEED*3/4);
 }
 
 void Evade::execute(Ghost* m_ghost, sf::Time delta)
 {
-	std::cout << "At Evade::execute()\n";
+	// std::cout << "At Evade::execute()\n";
 	m_timeBuffer += delta;
 
 	m_goalCell = m_maze->mapPixelToCell(m_pacWoman->getPosition());
@@ -186,29 +191,29 @@ void Evade::execute(Ghost* m_ghost, sf::Time delta)
 	m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
 
     // update direction
-	std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
-	std::cout << "m_path.being() = (" << m_path->begin()->x << ", " << m_path->begin()->y << ")\n";
-	printPath(m_path);
+	// std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
+	// std::cout << "m_path.being() = (" << m_path->begin()->x << ", " << m_path->begin()->y << ")\n";
+	// printPath(m_path);
 
 	if(m_currentCell == *m_path->begin())
 	{
 		m_path->pop_front();
         if(m_path->empty())         // if reached Goal
         {                                                 // otherwise search PacWoman location again
-            std::cout << "Path is empty, searching again!\n";
+            // std::cout << "Path is empty, searching again!\n";
             delete m_path;
             m_path = evadePath(m_currentCell, m_goalCell, m_maze, m_safeDistance, &m_endOfPath);
-            std::cout << "Finished searching!\n";           
+            // std::cout << "Finished searching!\n";           
         }
 
         sf::Vector2i nextCell = *(m_path->begin());
         if(m_currentCell + m_ghost->getDirection() != nextCell)
         {
-        	std::cout << "Changing Directions!!!!!!\n";
-        	std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
-        	std::cout << "nextCell = (" << nextCell.x << ", " << nextCell.y << ")\t";
+        	// std::cout << "Changing Directions!!!!!!\n";
+        	// std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
+        	// std::cout << "nextCell = (" << nextCell.x << ", " << nextCell.y << ")\t";
         	sf::Vector2i newDirection = nextCell - m_currentCell;
-        	std::cout << "newDirection = (" << newDirection.x << ", " << newDirection.y << ")\t";
+        	// std::cout << "newDirection = (" << newDirection.x << ", " << newDirection.y << ")\t";
         	m_ghost->setDirection(newDirection);
         }
     }
@@ -221,9 +226,8 @@ void Evade::exit(Ghost* m_ghost)
 
 
 //-------------------------------- DEAD CLASS ---------------------------------//
-Dead::Dead(const Maze* maze, sf::Vector2i home)
-:GhostState(maze)
-,m_homeCell(home)
+Dead::Dead(const Maze* maze, PacWoman* pacWoman, sf::Vector2i home)
+:GhostState(maze, pacWoman, home)
 ,m_atHome(false)
 ,m_timeBuffer(sf::Time::Zero)
 ,m_deadDuration(sf::Time::Zero)
@@ -239,6 +243,7 @@ Dead::~Dead()
 
 void Dead::enter(Ghost* m_ghost)
 {
+    std::cout << "Dead::enter()\n";
 	m_goalCell = m_homeCell;
 	m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
 
@@ -252,6 +257,7 @@ void Dead::enter(Ghost* m_ghost)
 
 	m_timeBuffer = sf::Time::Zero;
 	m_atHome = false;
+    m_ghost->setSpeed(m_MAXSPEED);
 }
 
 void Dead::execute(Ghost* m_ghost, sf::Time delta)
@@ -270,8 +276,8 @@ void Dead::execute(Ghost* m_ghost, sf::Time delta)
 		m_currentCell = m_maze->mapPixelToCell(m_ghost->getPosition());
 
         // update direction
-		std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
-		std::cout << "m_path.begin() = (" << m_path->begin()->x << ", " << m_path->begin()->y << ")\n";
+		// std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
+		// std::cout << "m_path.begin() = (" << m_path->begin()->x << ", " << m_path->begin()->y << ")\n";
 
 		if(m_currentCell == *m_path->begin())
 		{
@@ -285,11 +291,11 @@ void Dead::execute(Ghost* m_ghost, sf::Time delta)
 			sf::Vector2i nextCell = *(m_path->begin());
 			if(m_currentCell + m_ghost->getDirection() != nextCell)
 			{
-				std::cout << "Changing Directions!!!!!!\n";
-				std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
-				std::cout << "nextCell = (" << nextCell.x << ", " << nextCell.y << ")\t";
+			// 	std::cout << "Changing Directions!!!!!!\n";
+			// 	std::cout << "m_currentCell = (" << m_currentCell.x << ", " << m_currentCell.y << ")\t";
+			// 	std::cout << "nextCell = (" << nextCell.x << ", " << nextCell.y << ")\t";
 				sf::Vector2i newDirection = nextCell - m_currentCell;
-				std::cout << "newDirection = (" << newDirection.x << ", " << newDirection.y << ")\t";
+				// std::cout << "newDirection = (" << newDirection.x << ", " << newDirection.y << ")\t";
 				m_ghost->setDirection(newDirection);
 			}
 		}
@@ -298,7 +304,7 @@ void Dead::execute(Ghost* m_ghost, sf::Time delta)
 
 void Dead::exit(Ghost* m_ghost)
 {
-    // TO COMPLETE
+    m_ghost->setDead(false);
 }
 
 void Dead::setDeadDuration(sf::Time duration)
@@ -411,9 +417,9 @@ std::forward_list<sf::Vector2i>* searchPath(sf::Vector2i start, sf::Vector2i goa
     			ind = i;
     		}
     	}
-    	std::cout << "iterations = " << ++iterations << std::endl;
-    	std::cout << "currentNode.cell = "; printVector(currentNode.cell); std::cout << "\n";
-    	std::cout << "currentNode.value = " << currentNode.value << std::endl;
+    	// std::cout << "iterations = " << ++iterations << std::endl;
+    	// std::cout << "currentNode.cell = "; printVector(currentNode.cell); std::cout << "\n";
+    	// std::cout << "currentNode.value = " << currentNode.value << std::endl;
     	searchPool.erase(searchPool.begin()+ind);
     	alreadyVisited.insert(currentNode.cell);
         // if(iterations % 5 == 0)
@@ -425,8 +431,8 @@ std::forward_list<sf::Vector2i>* searchPath(sf::Vector2i start, sf::Vector2i goa
     	for(sf::Vector2i dir : directions){
 
     		sf::Vector2i newCell = currentNode.cell + dir;
-    		std::cout << "dir = "; printVector(dir); std::cout << "\n";
-    		std::cout << "newCell = "; printVector(newCell); std::cout << "\n";
+    		// std::cout << "dir = "; printVector(dir); std::cout << "\n";
+    		// std::cout << "newCell = "; printVector(newCell); std::cout << "\n";
             if(m_maze->isWall(newCell))      // If it is a Wall or is an already visited cell, ignore
             	continue;
             else if(alreadyVisited.find(newCell) != alreadyVisited.end())
@@ -567,7 +573,7 @@ std::forward_list<sf::Vector2i>* evadePath(sf::Vector2i start, sf::Vector2i play
     	currentCell =  previousCell;
     }
 
-    std::cout << "Leaving evadePath()\n";
-    printPath(path);
+    // std::cout << "Leaving evadePath()\n";
+    // printPath(path);
     return path;
 }

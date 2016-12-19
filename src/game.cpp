@@ -21,6 +21,8 @@ Game::Game()
 	m_gameStates[GameState::Test] = new TestState(this);
 	
 	changeGameState(GameState::NoCoin);
+
+	std::cout << "Finished Game::Game()\n";
 }
 
 Game::~Game()
